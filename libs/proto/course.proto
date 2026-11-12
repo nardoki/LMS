@@ -1,0 +1,270 @@
+syntax = "proto3";
+
+package course;
+
+service CourseService {
+  // Courses
+  rpc CreateCourse (CreateCourseRequest) returns (CourseResponse);
+  rpc GetCourse (GetCourseRequest) returns (CourseDetailResponse);
+  rpc ListCourses (ListCoursesRequest) returns (ListCoursesResponse);
+  rpc UpdateCourse (UpdateCourseRequest) returns (CourseResponse);
+  rpc DeleteCourse (DeleteCourseRequest) returns (DeleteResponse);
+
+  // Modules
+  rpc AddModule (AddModuleRequest) returns (ModuleResponse);
+  rpc UpdateModule (UpdateModuleRequest) returns (ModuleResponse);
+  rpc DeleteModule (DeleteModuleRequest) returns (DeleteResponse);
+
+  // Lessons
+  rpc AddLesson (AddLessonRequest) returns (LessonResponse);
+  rpc GetLesson (GetLessonRequest) returns (LessonResponse);
+  rpc UpdateLesson (UpdateLessonRequest) returns (LessonResponse);
+  rpc DeleteLesson (DeleteLessonRequest) returns (DeleteResponse);
+  rpc TagLessonConcept (TagLessonConceptRequest) returns (LessonResponse);
+
+  // Concepts & Prerequisites
+  rpc CreateConcept (CreateConceptRequest) returns (ConceptResponse);
+  rpc UpdateConcept (UpdateConceptRequest) returns (ConceptResponse);
+  rpc DeleteConcept (DeleteConceptRequest) returns (DeleteResponse);
+  rpc AddConceptPrerequisite (AddConceptPrerequisiteRequest) returns (PrerequisiteResponse);
+  rpc RemoveConceptPrerequisite (RemoveConceptPrerequisiteRequest) returns (DeleteResponse);
+  rpc GetCoursePath (GetCoursePathRequest) returns (CoursePathResponse);
+
+  // Enrollment
+  rpc Enroll (EnrollRequest) returns (EnrollmentResponse);
+  rpc GetCourseEnrollments (GetCourseEnrollmentsRequest) returns (CourseEnrollmentsResponse);
+}
+
+message DeleteResponse {
+  bool deleted = 1;
+  string id = 2;
+}
+
+message CreateCourseRequest {
+  string instructor_id = 1;
+  string title = 2;
+  string description = 3;
+  bool is_published = 4;
+}
+
+message GetCourseRequest {
+  string course_id = 1;
+}
+
+message ListCoursesRequest {
+  bool published_only = 1;
+  string instructor_id = 2;
+}
+
+message UpdateCourseRequest {
+  string course_id = 1;
+  string actor_id = 2;
+  string actor_role = 3;
+  string title = 4;
+  string description = 5;
+  bool has_is_published = 6;
+  bool is_published = 7;
+}
+
+message DeleteCourseRequest {
+  string course_id = 1;
+  string actor_id = 2;
+  string actor_role = 3;
+}
+
+message CourseResponse {
+  string id = 1;
+  string instructor_id = 2;
+  string title = 3;
+  string description = 4;
+  bool is_published = 5;
+  string created_at = 6;
+}
+
+message ListCoursesResponse {
+  repeated CourseResponse courses = 1;
+}
+
+message AddModuleRequest {
+  string course_id = 1;
+  string actor_id = 2;
+  string actor_role = 3;
+  string title = 4;
+  int32 order_index = 5;
+  string status = 6;
+}
+
+message UpdateModuleRequest {
+  string module_id = 1;
+  string actor_id = 2;
+  string actor_role = 3;
+  string title = 4;
+  int32 order_index = 5;
+  bool has_order_index = 6;
+  string status = 7;
+}
+
+message DeleteModuleRequest {
+  string module_id = 1;
+  string actor_id = 2;
+  string actor_role = 3;
+}
+
+message ModuleResponse {
+  string id = 1;
+  string course_id = 2;
+  string title = 3;
+  int32 order_index = 4;
+  string status = 5;
+}
+
+message AddLessonRequest {
+  string module_id = 1;
+  string actor_id = 2;
+  string actor_role = 3;
+  string concept_id = 4;
+  string title = 5;
+  string content_markdown = 6;
+  string media_url = 7;
+  int32 order_index = 8;
+  string status = 9;
+}
+
+message GetLessonRequest {
+  string lesson_id = 1;
+}
+
+message UpdateLessonRequest {
+  string lesson_id = 1;
+  string actor_id = 2;
+  string actor_role = 3;
+  string concept_id = 4;
+  string title = 5;
+  string content_markdown = 6;
+  string media_url = 7;
+  int32 order_index = 8;
+  bool has_order_index = 9;
+  string status = 10;
+}
+
+message DeleteLessonRequest {
+  string lesson_id = 1;
+  string actor_id = 2;
+  string actor_role = 3;
+}
+
+message TagLessonConceptRequest {
+  string lesson_id = 1;
+  string concept_id = 2;
+  string actor_id = 3;
+  string actor_role = 4;
+}
+
+message LessonResponse {
+  string id = 1;
+  string module_id = 2;
+  string concept_id = 3;
+  string title = 4;
+  string content_markdown = 5;
+  string media_url = 6;
+  int32 order_index = 7;
+  string status = 8;
+}
+
+message CreateConceptRequest {
+  string course_id = 1;
+  string actor_id = 2;
+  string actor_role = 3;
+  string name = 4;
+  string description = 5;
+  int32 difficulty = 6;
+}
+
+message UpdateConceptRequest {
+  string concept_id = 1;
+  string actor_id = 2;
+  string actor_role = 3;
+  string name = 4;
+  string description = 5;
+  int32 difficulty = 6;
+}
+
+message DeleteConceptRequest {
+  string concept_id = 1;
+  string actor_id = 2;
+  string actor_role = 3;
+}
+
+message ConceptResponse {
+  string id = 1;
+  string course_id = 2;
+  string name = 3;
+  string description = 4;
+  int32 difficulty = 5;
+}
+
+message AddConceptPrerequisiteRequest {
+  string concept_id = 1;
+  string requires_concept_id = 2;
+  string actor_id = 3;
+  string actor_role = 4;
+}
+
+message RemoveConceptPrerequisiteRequest {
+  string concept_id = 1;
+  string requires_concept_id = 2;
+  string actor_id = 3;
+  string actor_role = 4;
+}
+
+message PrerequisiteResponse {
+  string concept_id = 1;
+  string requires_concept_id = 2;
+}
+
+message CourseDetailResponse {
+  CourseResponse course = 1;
+  repeated ModuleResponse modules = 2;
+  repeated LessonResponse lessons = 3;
+  repeated ConceptResponse concepts = 4;
+  repeated PrerequisiteResponse prerequisites = 5;
+}
+
+message GetCoursePathRequest {
+  string course_id = 1;
+  string student_id = 2;
+}
+
+message ConceptNode {
+  ConceptResponse concept = 1;
+  repeated string prerequisite_ids = 2;
+  bool unlocked = 3;
+}
+
+message CoursePathResponse {
+  string course_id = 1;
+  repeated ConceptNode nodes = 2;
+}
+
+message EnrollRequest {
+  string student_id = 1;
+  string course_id = 2;
+}
+
+message EnrollmentResponse {
+  string id = 1;
+  string student_id = 2;
+  string course_id = 3;
+  string status = 4;
+  string enrolled_at = 5;
+  int32 seeded_concepts_count = 6;
+}
+
+message GetCourseEnrollmentsRequest {
+  string course_id = 1;
+}
+
+message CourseEnrollmentsResponse {
+  string course_id = 1;
+  repeated string student_ids = 2;
+}

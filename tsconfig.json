@@ -23,5 +23,6 @@
       "@lms/supabase": ["./libs/supabase/src"],
       "@lms/supabase/*": ["./libs/supabase/src/*"]
     }
-  }
+  },
+  "exclude": ["node_modules", "dist", "frontend"]
 }

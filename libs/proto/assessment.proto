@@ -1,0 +1,164 @@
+syntax = "proto3";
+
+package assessment;
+
+service AssessmentService {
+  rpc CreateQuestion (CreateQuestionRequest) returns (QuestionResponse);
+  rpc TagQuestionConcept (TagConceptRequest) returns (QuestionResponse);
+  rpc GetQuiz (GetQuizRequest) returns (GetQuizResponse);
+  rpc SubmitAnswer (SubmitAnswerRequest) returns (SubmitAnswerResponse);
+  rpc CreateAssignment (CreateAssignmentRequest) returns (AssignmentResponse);
+  rpc ListAssignments (ListAssignmentsRequest) returns (ListAssignmentsResponse);
+  rpc GetAssignment (GetAssignmentRequest) returns (AssignmentResponse);
+  rpc UpdateAssignment (UpdateAssignmentRequest) returns (AssignmentResponse);
+  rpc DeleteAssignment (DeleteAssignmentRequest) returns (DeleteAssignmentResponse);
+  rpc TagAssignmentConcept (TagConceptRequest) returns (AssignmentResponse);
+  rpc SubmitAssignment (SubmitAssignmentRequest) returns (SubmissionResponse);
+  rpc GradeSubmission (GradeSubmissionRequest) returns (SubmissionResponse);
+  rpc StreamLiveQuiz (StreamLiveQuizRequest) returns (stream LiveLeaderboardUpdate);
+}
+
+message ListAssignmentsRequest {
+  string module_id = 1;
+  string concept_id = 2;
+  string tier = 3;
+}
+
+message ListAssignmentsResponse {
+  repeated AssignmentResponse assignments = 1;
+}
+
+message GetAssignmentRequest {
+  string assignment_id = 1;
+}
+
+message UpdateAssignmentRequest {
+  string assignment_id = 1;
+  string title = 2;
+  string description = 3;
+  string tier = 4;
+  string due_date = 5;
+}
+
+message DeleteAssignmentRequest {
+  string assignment_id = 1;
+}
+
+message DeleteAssignmentResponse {
+  bool deleted = 1;
+  string id = 2;
+}
+
+message TagConceptRequest {
+  string target_id = 1;
+  string concept_id = 2;
+}
+
+message CreateQuestionRequest {
+  string module_id = 1;
+  string concept_id = 2;
+  string question_text = 3;
+  repeated string options = 4;
+  string correct_answer = 5;
+  int32 difficulty = 6;
+  bool is_diagnostic = 7;
+}
+
+message QuestionResponse {
+  string id = 1;
+  string module_id = 2;
+  string concept_id = 3;
+  string question_text = 4;
+  repeated string options = 5;
+  int32 difficulty = 6;
+  bool is_diagnostic = 7;
+}
+
+message GetQuizRequest {
+  string module_id = 1;
+  bool diagnostic_only = 2;
+}
+
+message GetQuizResponse {
+  string module_id = 1;
+  repeated QuestionResponse questions = 2;
+}
+
+message SubmitAnswerRequest {
+  string student_id = 1;
+  string question_id = 2;
+  string selected_answer = 3;
+  int32 time_taken_sec = 4;
+}
+
+message SubmitAnswerResponse {
+  string attempt_id = 1;
+  string question_id = 2;
+  string concept_id = 3;
+  bool correct = 4;
+  string correct_answer = 5;
+  string answered_at = 6;
+}
+
+message CreateAssignmentRequest {
+  string module_id = 1;
+  string concept_id = 2;
+  string title = 3;
+  string description = 4;
+  string tier = 5;
+  string due_date = 6;
+}
+
+message AssignmentResponse {
+  string id = 1;
+  string module_id = 2;
+  string concept_id = 3;
+  string title = 4;
+  string description = 5;
+  string tier = 6;
+  string due_date = 7;
+}
+
+message SubmitAssignmentRequest {
+  string assignment_id = 1;
+  string student_id = 2;
+  string file_url = 3;
+  string content_text = 4;
+}
+
+message GradeSubmissionRequest {
+  string submission_id = 1;
+  double grade = 2;
+  string feedback = 3;
+}
+
+message SubmissionResponse {
+  string id = 1;
+  string assignment_id = 2;
+  string student_id = 3;
+  string file_url = 4;
+  string content_text = 5;
+  double grade = 6;
+  string feedback = 7;
+  string status = 8;
+  string submitted_at = 9;
+  string graded_at = 10;
+}
+
+message StreamLiveQuizRequest {
+  string session_id = 1;
+  string module_id = 2;
+}
+
+message LeaderboardEntry {
+  string student_id = 1;
+  string student_name = 2;
+  int32 score = 3;
+  int32 rank = 4;
+}
+
+message LiveLeaderboardUpdate {
+  string session_id = 1;
+  repeated LeaderboardEntry entries = 2;
+  string updated_at = 3;
+}

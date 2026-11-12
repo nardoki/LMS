@@ -1,0 +1,96 @@
+syntax = "proto3";
+
+package mastery;
+
+service MasteryService {
+  rpc SeedStudentMastery (SeedStudentMasteryRequest) returns (SeedStudentMasteryResponse);
+  rpc RecordAnswer (RecordAnswerRequest) returns (ConceptMasteryCell);
+  rpc MarkConceptMastered (MarkConceptMasteredRequest) returns (ConceptMasteryCell);
+  rpc GetHeatmap (GetHeatmapRequest) returns (GetHeatmapResponse);
+  rpc GetSmartQueue (GetSmartQueueRequest) returns (GetSmartQueueResponse);
+  rpc GetClassReport (GetClassReportRequest) returns (GetClassReportResponse);
+}
+
+message MarkConceptMasteredRequest {
+  string student_id = 1;
+  string concept_id = 2;
+  double grade = 3;
+}
+
+message SeedStudentMasteryRequest {
+  string student_id = 1;
+  repeated string concept_ids = 2;
+}
+
+message SeedStudentMasteryResponse {
+  int32 seeded_count = 1;
+}
+
+message RecordAnswerRequest {
+  string student_id = 1;
+  string concept_id = 2;
+  bool correct = 3;
+  int32 difficulty = 4;
+  int32 time_taken_sec = 5;
+}
+
+message ConceptMasteryCell {
+  string concept_id = 1;
+  string concept_name = 2;
+  double mastery = 3;
+  double confidence = 4;
+  string status = 5;
+  string recommended_tier = 6;
+  string last_practiced_at = 7;
+  string next_review_at = 8;
+  bool unlocked = 9;
+}
+
+message GetHeatmapRequest {
+  string student_id = 1;
+  string course_id = 2;
+}
+
+message GetHeatmapResponse {
+  string student_id = 1;
+  string course_id = 2;
+  repeated ConceptMasteryCell cells = 3;
+}
+
+message GetSmartQueueRequest {
+  string student_id = 1;
+  string course_id = 2;
+}
+
+message SmartQueueItem {
+  string concept_id = 1;
+  string concept_name = 2;
+  string reason = 3;
+  string recommended_tier = 4;
+  double priority_score = 5;
+  bool unlocked = 6;
+}
+
+message GetSmartQueueResponse {
+  string student_id = 1;
+  string course_id = 2;
+  repeated SmartQueueItem items = 3;
+}
+
+message GetClassReportRequest {
+  string course_id = 1;
+}
+
+message ClassConceptStat {
+  string concept_id = 1;
+  string concept_name = 2;
+  double average_mastery = 3;
+  int32 blind_spot_count = 4;
+  int32 in_progress_count = 5;
+  int32 mastered_count = 6;
+}
+
+message GetClassReportResponse {
+  string course_id = 1;
+  repeated ClassConceptStat stats = 2;
+}
