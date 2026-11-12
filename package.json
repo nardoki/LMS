@@ -1,0 +1,89 @@
+{
+  "name": "mastery-lms",
+  "version": "0.1.0",
+  "description": "MasteryLMS — Adaptive, blind-spot-driven Learning Management System",
+  "private": true,
+  "scripts": {
+    "build": "nest build gateway && nest build course-svc && nest build assessment-svc && nest build mastery-svc",
+    "dev": "concurrently -n gw,course,assess,mastery -c cyan,green,yellow,magenta \"npm run start:gateway\" \"npm run start:course\" \"npm run start:assessment\" \"npm run start:mastery\"",
+    "start:gateway": "nest start gateway --watch",
+    "start:course": "nest start course-svc --watch",
+    "start:assessment": "nest start assessment-svc --watch",
+    "start:mastery": "nest start mastery-svc --watch",
+    "start:prod:gateway": "node dist/apps/gateway/main",
+    "start:prod:course": "node dist/apps/course-svc/main",
+    "start:prod:assessment": "node dist/apps/assessment-svc/main",
+    "start:prod:mastery": "node dist/apps/mastery-svc/main",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
+    "typecheck": "tsc --noEmit",
+    "db:start": "supabase start",
+    "db:stop": "supabase stop",
+    "db:reset": "supabase db reset",
+    "db:push": "supabase db push --remote",
+    "db:status": "supabase status"
+  },
+  "dependencies": {
+    "@grpc/grpc-js": "^1.14.7",
+    "@grpc/proto-loader": "^0.8.1",
+    "@nestjs/common": "^12.4.2",
+    "@nestjs/config": "^12.1.1",
+    "@nestjs/core": "^12.4.2",
+    "@nestjs/microservices": "^12.4.2",
+    "@nestjs/platform-express": "^12.4.2",
+    "@nestjs/swagger": "^12.1.1",
+    "@supabase/supabase-js": "^2.119.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
+    "dotenv": "^16.5.0",
+    "pg": "^8.23.1",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^12.0.12",
+    "@nestjs/schematics": "^12.0.13",
+    "@nestjs/testing": "^12.4.2",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.0.0",
+    "@types/pg": "^8.15.0",
+    "concurrently": "^9.1.2",
+    "fork-ts-checker-webpack-plugin": "^9.1.0",
+    "jest": "^30.5.2",
+    "supabase": "^3.1.0",
+    "ts-jest": "^29.4.15",
+    "ts-loader": "^9.6.2",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "tsconfig-paths-webpack-plugin": "^4.2.0",
+    "typescript": "~6.0.2",
+    "webpack": "^5.105.0",
+    "webpack-node-externals": "^3.0.0"
+  },
+  "jest": {
+    "extensionsToTreatAsEsm": [".ts"],
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
+    "rootDir": ".",
+    "testRegex": ".*\\.spec\\.ts$",
+    "transform": {
+      "^.+\\.tsx?$": [
+        "ts-jest",
+        {
+          "useESM": true,
+          "tsconfig": "<rootDir>/tsconfig.spec.json"
+        }
+      ]
+    },
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "^@lms/common$": "<rootDir>/libs/common/src/index.ts",
+      "^@lms/common/(.*)$": "<rootDir>/libs/common/src/$1",
+      "^@lms/supabase$": "<rootDir>/libs/supabase/src/index.ts",
+      "^@lms/supabase/(.*)$": "<rootDir>/libs/supabase/src/$1"
+    }
+  }
+}

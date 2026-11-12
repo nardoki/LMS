@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "target": "ES2022",
+    "sourceMap": true,
+    "rootDir": ".",
+    "outDir": "./dist",
+    "incremental": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "strictPropertyInitialization": false,
+    "forceConsistentCasingInFileNames": true,
+    "types": ["node", "jest"],
+    "paths": {
+      "@lms/common": ["./libs/common/src"],
+      "@lms/common/*": ["./libs/common/src/*"],
+      "@lms/supabase": ["./libs/supabase/src"],
+      "@lms/supabase/*": ["./libs/supabase/src/*"]
+    }
+  }
+}
