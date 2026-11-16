@@ -37,9 +37,17 @@ export default async function StudentDashboardPage() {
   let instructorName = "MasteryLMS Faculty";
   let conceptNodes: DashboardConceptNode[] = [];
   let assignments: DashboardAssignment[] = [];
+  let defaultModuleId = "bbbbbbbb-0001-0001-0001-000000000002";
 
   if (enrollment?.course_id) {
-    const [courseRes, conceptsRes, prereqsRes, masteryRes] = await Promise.all([
+    const [
+      courseRes,
+      conceptsRes,
+      prereqsRes,
+      masteryRes,
+      modulesRes,
+      lessonsRes,
+    ] = await Promise.all([
       supabase
         .schema("course")
         .from("courses")
@@ -61,6 +69,16 @@ export default async function StudentDashboardPage() {
         .from("student_concept_mastery")
         .select("concept_id, mastery, status")
         .eq("student_id", user.id),
+      supabase
+        .schema("course")
+        .from("modules")
+        .select("id, title, order_index")
+        .eq("course_id", enrollment.course_id)
+        .order("order_index", { ascending: true }),
+      supabase
+        .schema("course")
+        .from("lessons")
+        .select("module_id, concept_id"),
     ]);
 
     if (courseRes.data?.title) {
@@ -77,6 +95,19 @@ export default async function StudentDashboardPage() {
         instructorName = instProfile.name;
       }
     }
+
+    const moduleByConceptId = new Map<string, string>();
+    for (const l of lessonsRes.data ?? []) {
+      if (l.concept_id && l.module_id) {
+        moduleByConceptId.set(l.concept_id, l.module_id);
+      }
+    }
+
+    defaultModuleId =
+      moduleByConceptId.get("cccccccc-0001-0001-0001-000000000003") ??
+      modulesRes.data?.[1]?.id ??
+      modulesRes.data?.[0]?.id ??
+      "bbbbbbbb-0001-0001-0001-000000000002";
 
     const masteryMap = new Map<
       string,
@@ -117,6 +148,7 @@ export default async function StudentDashboardPage() {
         status: m?.status ?? "not_started",
         locked,
         prereqHint: locked && reqName ? `Requires ${reqName}` : undefined,
+        moduleId: moduleByConceptId.get(c.id) ?? defaultModuleId,
       };
     });
 
@@ -146,6 +178,7 @@ export default async function StudentDashboardPage() {
       instructorName={instructorName}
       concepts={conceptNodes}
       assignments={assignments}
+      defaultModuleId={defaultModuleId}
     />
   );
 }

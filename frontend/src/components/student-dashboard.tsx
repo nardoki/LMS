@@ -1,8 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import {
   AlertTriangle,
+  ArrowRight,
   BookOpen,
   CheckCircle2,
   ClipboardList,
@@ -30,6 +32,7 @@ export interface DashboardConceptNode {
   status: MasteryStatus;
   locked: boolean;
   prereqHint?: string;
+  moduleId?: string;
 }
 
 export interface DashboardAssignment {
@@ -47,6 +50,7 @@ export interface StudentDashboardProps {
   instructorName: string;
   concepts: DashboardConceptNode[];
   assignments: DashboardAssignment[];
+  defaultModuleId?: string;
 }
 
 function classifyPercent(pct: number): MasteryStatus {
@@ -109,6 +113,7 @@ export function StudentDashboard({
   instructorName,
   concepts,
   assignments,
+  defaultModuleId = "bbbbbbbb-0001-0001-0001-000000000002",
 }: StudentDashboardProps) {
   const [simulated, setSimulated] = useState(false);
   const [dismissedIds, setDismissedIds] = useState<string[]>([]);
@@ -157,6 +162,7 @@ export function StudentDashboard({
       .filter((c) => !dismissedIds.includes(c.id))
       .map((c) => ({
         id: c.id,
+        moduleId: c.moduleId ?? defaultModuleId,
         conceptName: c.name,
         tag: c.status === "blind_spot" ? "Blind Spot Recovery" : "Concept Practice",
         isUrgent: c.status === "blind_spot",
@@ -170,7 +176,7 @@ export function StudentDashboard({
             : `Current mastery is ${c.mastery}%. Push past 80% to mark this concept mastered.`,
         cta: c.status === "blind_spot" ? "Start Review" : "Continue",
       }));
-  }, [displayConcepts, dismissedIds]);
+  }, [displayConcepts, dismissedIds, defaultModuleId]);
 
   const ringRadius = 30;
   const ringCircumference = 2 * Math.PI * ringRadius;
@@ -206,6 +212,24 @@ export function StudentDashboard({
           </div>
 
           <div className="flex items-center gap-3">
+            <Link
+              href="/courses"
+              className="text-xs font-medium text-slate-300 hover:text-white transition"
+            >
+              Courses
+            </Link>
+            <Link
+              href={`/quiz/${defaultModuleId}`}
+              className="text-xs font-medium text-slate-300 hover:text-white transition"
+            >
+              Adaptive Quiz
+            </Link>
+            <Link
+              href="/certificates"
+              className="text-xs font-medium text-slate-300 hover:text-white transition"
+            >
+              Certificates
+            </Link>
             <div className="hidden text-right sm:block">
               <p className="text-xs font-medium text-slate-200">{studentName}</p>
               <p className="text-[11px] text-slate-400">{studentEmail}</p>
@@ -321,14 +345,23 @@ export function StudentDashboard({
                 Live concept scores from Supabase. Blind spots (&lt;40%) unlock remedial drills.
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => setSimulated((s) => !s)}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-[#222a3d] px-3 py-1.5 text-xs font-medium text-slate-100 transition hover:bg-[#2d3449]"
-            >
-              <Zap className="h-3.5 w-3.5 text-[#7bd0ff]" />
-              {simulated ? "Reset Preview" : "Simulate +20%"}
-            </button>
+            <div className="flex items-center gap-2">
+              <Link
+                href={`/quiz/${defaultModuleId}`}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-[#8083ff] px-3 py-1.5 text-xs font-semibold text-[#0d0096] transition hover:bg-[#c0c1ff] shadow-sm"
+              >
+                <Zap className="h-3.5 w-3.5" />
+                Adaptive Quiz
+              </Link>
+              <button
+                type="button"
+                onClick={() => setSimulated((s) => !s)}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-[#222a3d] px-3 py-1.5 text-xs font-medium text-slate-100 transition hover:bg-[#2d3449]"
+              >
+                <RefreshCw className="h-3.5 w-3.5 text-[#7bd0ff]" />
+                {simulated ? "Reset Preview" : "Simulate +20%"}
+              </button>
+            </div>
           </div>
 
           {displayConcepts.length === 0 ? (
@@ -364,9 +397,19 @@ export function StudentDashboard({
                       >
                         {meta.label}
                       </span>
-                      <span className="font-mono text-sm font-semibold text-white">
-                        {node.mastery}%
-                      </span>
+                      <div className="flex items-center gap-2">
+                        {!node.locked && node.status !== "not_started" && (
+                          <Link
+                            href={node.moduleId ? `/quiz/${node.moduleId}?conceptId=${node.id}` : `/quiz`}
+                            className="text-[11px] font-medium text-[#7bd0ff] hover:underline"
+                          >
+                            Quiz &rarr;
+                          </Link>
+                        )}
+                        <span className="font-mono text-sm font-semibold text-white">
+                          {node.mastery}%
+                        </span>
+                      </div>
                     </div>
                   </div>
                 );
@@ -428,20 +471,31 @@ export function StudentDashboard({
                     </div>
                     <h3 className="text-sm font-semibold text-white">{item.title}</h3>
                     <p className="mt-1 text-xs text-slate-400">{item.description}</p>
-                    <div className="mt-3 flex justify-end">
+                    <div className="mt-3 flex items-center justify-end gap-2">
                       <button
                         type="button"
                         onClick={() =>
                           setDismissedIds((prev) => [...prev, item.id])
                         }
-                        className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
+                        className="rounded-lg px-2.5 py-1.5 text-xs text-slate-400 hover:text-slate-200 transition"
+                      >
+                        Dismiss
+                      </button>
+                      <Link
+                        href={
+                          item.moduleId
+                            ? `/quiz/${item.moduleId}?conceptId=${item.id}`
+                            : `/quiz`
+                        }
+                        className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition inline-flex items-center gap-1.5 ${
                           item.isUrgent
-                            ? "bg-[#c0c1ff] text-[#1000a9] hover:opacity-90"
+                            ? "bg-[#c0c1ff] text-[#1000a9] hover:opacity-90 shadow-sm"
                             : "bg-[#222a3d] text-slate-100 hover:bg-[#2d3449]"
                         }`}
                       >
-                        {item.cta}
-                      </button>
+                        <span>{item.cta}</span>
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </Link>
                     </div>
                   </div>
                 ))}
@@ -473,21 +527,29 @@ export function StudentDashboard({
                       key={a.id}
                       className="rounded-xl bg-[#131b2e] p-3.5 border border-slate-800/70"
                     >
-                      <div className="mb-1 flex items-center gap-2">
-                        <span
-                          className={`rounded-full px-2 py-0.5 text-[11px] font-medium capitalize ${
-                            a.tier === "remedial"
-                              ? "bg-amber-500/20 text-amber-300"
-                              : a.tier === "challenge"
-                                ? "bg-emerald-500/20 text-emerald-300"
-                                : "bg-[#3626ce]/70 text-[#c3c0ff]"
-                          }`}
+                      <div className="mb-1 flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-[11px] font-medium capitalize ${
+                              a.tier === "remedial"
+                                ? "bg-amber-500/20 text-amber-300"
+                                : a.tier === "challenge"
+                                  ? "bg-emerald-500/20 text-emerald-300"
+                                  : "bg-[#3626ce]/70 text-[#c3c0ff]"
+                            }`}
+                          >
+                            {a.tier} tier
+                          </span>
+                          <span className="text-[11px] text-slate-400">
+                            {a.conceptName}
+                          </span>
+                        </div>
+                        <Link
+                          href={`/assignments/${a.id}`}
+                          className="text-[11px] font-semibold text-[#8083ff] hover:text-[#c0c1ff] inline-flex items-center gap-1"
                         >
-                          {a.tier} tier
-                        </span>
-                        <span className="text-[11px] text-slate-400">
-                          {a.conceptName}
-                        </span>
+                          Submit <ArrowRight className="h-3 w-3" />
+                        </Link>
                       </div>
                       <h3 className="text-sm font-semibold text-white">{a.title}</h3>
                       <p className="mt-1 text-xs text-slate-400">{a.description}</p>
