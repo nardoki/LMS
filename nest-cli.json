@@ -46,6 +46,15 @@
         "tsConfigPath": "apps/mastery-svc/tsconfig.app.json"
       }
     },
+    "notification-svc": {
+      "type": "application",
+      "root": "apps/notification-svc",
+      "entryFile": "main",
+      "sourceRoot": "apps/notification-svc/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/notification-svc/tsconfig.app.json"
+      }
+    },
     "common": {
       "type": "library",
       "root": "libs/common",

@@ -332,3 +332,54 @@ VALUES
     ('33333333-3333-3333-3333-333333333333', 'cccccccc-0001-0001-0001-000000000004', 0.00, 0.00, 'not_started', NULL, NULL),
     ('33333333-3333-3333-3333-333333333333', 'cccccccc-0001-0001-0001-000000000005', 0.00, 0.00, 'not_started', NULL, NULL)
 ON CONFLICT (student_id, concept_id) DO NOTHING;
+
+-- -----------------------------------------------------------------------------
+-- 5. Verifiable Completion Certificate Demo
+-- -----------------------------------------------------------------------------
+INSERT INTO public.certificates (student_id, course_id, verification_code, mastered_concepts_json, payload_hash, issued_at)
+VALUES (
+    '22222222-2222-2222-2222-222222222222',
+    'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    'MLMS-2026-ALICE-WEBDEV',
+    '["HTML Elements & Semantics", "CSS Box Model & Selectors"]'::jsonb,
+    '8f18c2807f62c5b967cecf2ad8a2cfec7535ad4687bc5e59b2d97adbafe5c635',
+    now() - interval '3 days'
+)
+ON CONFLICT (student_id, course_id) DO UPDATE
+    SET verification_code = EXCLUDED.verification_code,
+        mastered_concepts_json = EXCLUDED.mastered_concepts_json,
+        payload_hash = EXCLUDED.payload_hash;
+
+-- -----------------------------------------------------------------------------
+-- 6. Demo Notification Feed
+-- -----------------------------------------------------------------------------
+INSERT INTO public.notifications (user_id, type, title, message, metadata, is_read, created_at)
+VALUES
+    (
+        '22222222-2222-2222-2222-222222222222',
+        'spaced_repetition_review',
+        'Time to Review: Flexbox & Grid Layout',
+        'Your confidence score is ready for a booster. Complete a 3-question diagnostic quiz to reinforce your mastery.',
+        '{"concept_id": "cccccccc-0001-0001-0001-000000000003", "concept_name": "Flexbox & Grid Layout"}'::jsonb,
+        false,
+        now() - interval '2 hours'
+    ),
+    (
+        '22222222-2222-2222-2222-222222222222',
+        'grade_alert',
+        'Grade Published: Responsive Web Design',
+        'Prof. Ada Lovelace has graded your Module 2 assignment with a score of 95/100.',
+        '{"course_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", "score": 95}'::jsonb,
+        false,
+        now() - interval '1 day'
+    ),
+    (
+        '22222222-2222-2222-2222-222222222222',
+        'certificate_issued',
+        'Certificate of Mastery Ready!',
+        'Congratulations! Your completion certificate MLMS-2026-ALICE-WEBDEV has been cryptographically signed and registered.',
+        '{"verification_code": "MLMS-2026-ALICE-WEBDEV"}'::jsonb,
+        true,
+        now() - interval '3 days'
+    );
+
