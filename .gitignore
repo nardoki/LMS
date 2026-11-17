@@ -9,11 +9,11 @@ build/
 .next/
 out/
 
-# Environment variables
+# Environment variables 
 .env
 .env.local
 .env.*.local
-.env.example
+!.env.example
 
 # Logs
 logs/
@@ -36,4 +36,6 @@ supabase/.branches/
 coverage/
 temp/
 docs/
+qa/
+
 

@@ -1,8 +1,8 @@
-name: mastery
 services:
-  # ---------------------------------------------------------------------------
-  # Redis: Heatmap cache, BullMQ event queue & scheduled reminders
-  # ---------------------------------------------------------------------------
+  # ===========================================================================
+  # 1. Infrastructure Layer: Redis, Odoo & Database
+  # ===========================================================================
+
   redis:
     image: redis:7-alpine
     container_name: masterylms-redis
@@ -16,10 +16,9 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - lms-net
 
-  # ---------------------------------------------------------------------------
-  # Odoo Database: PostgreSQL 15 for Odoo ERP
-  # ---------------------------------------------------------------------------
   odoo-db:
     image: postgres:15
     container_name: masterylms-odoo-db
@@ -37,10 +36,9 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - lms-net
 
-  # ---------------------------------------------------------------------------
-  # Odoo Community 17.0: Back office, enrollment invoicing & LMS connector
-  # ---------------------------------------------------------------------------
   odoo:
     image: odoo:17.0
     container_name: masterylms-odoo
@@ -50,16 +48,170 @@ services:
       redis:
         condition: service_healthy
     ports:
-      - "8069:8069"
+      - "${ODOO_PORT:-8071}:8069"
     environment:
       - HOST=odoo-db
       - USER=odoo
       - PASSWORD=odoo_secret_password
-      - LMS_GATEWAY_URL=http://host.docker.internal:3000
+      - LMS_GATEWAY_URL=http://gateway:3000
     volumes:
       - odoo_web_data:/var/lib/odoo
       - ./odoo-addons:/mnt/extra-addons
     restart: unless-stopped
+    networks:
+      - lms-net
+
+  # ===========================================================================
+  # 2. Backend Microservices Layer (gRPC)
+  # ===========================================================================
+
+  course-svc:
+    build:
+      context: .
+      dockerfile: infra/docker/course-svc.Dockerfile
+    container_name: masterylms-course-svc
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - COURSE_SERVICE_TARGET=0.0.0.0:50051
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - DATABASE_URL=${DATABASE_URL}
+    ports:
+      - "50051:50051"
+    networks:
+      - lms-net
+
+  assessment-svc:
+    build:
+      context: .
+      dockerfile: infra/docker/assessment-svc.Dockerfile
+    container_name: masterylms-assessment-svc
+    restart: unless-stopped
+    depends_on:
+      - course-svc
+    environment:
+      - NODE_ENV=production
+      - ASSESSMENT_SERVICE_TARGET=0.0.0.0:50052
+      - COURSE_SERVICE_TARGET=course-svc:50051
+      - MASTERY_SERVICE_TARGET=mastery-svc:50053
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - DATABASE_URL=${DATABASE_URL}
+    ports:
+      - "50052:50052"
+    networks:
+      - lms-net
+
+  mastery-svc:
+    build:
+      context: .
+      dockerfile: infra/docker/mastery-svc.Dockerfile
+    container_name: masterylms-mastery-svc
+    restart: unless-stopped
+    depends_on:
+      - course-svc
+      - redis
+    environment:
+      - NODE_ENV=production
+      - MASTERY_SERVICE_TARGET=0.0.0.0:50053
+      - COURSE_SERVICE_TARGET=course-svc:50051
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - DATABASE_URL=${DATABASE_URL}
+    ports:
+      - "50053:50053"
+    networks:
+      - lms-net
+
+  notification-svc:
+    build:
+      context: .
+      dockerfile: infra/docker/notification-svc.Dockerfile
+    container_name: masterylms-notification-svc
+    restart: unless-stopped
+    depends_on:
+      - redis
+    environment:
+      - NODE_ENV=production
+      - NOTIFICATION_SERVICE_TARGET=0.0.0.0:50054
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - DATABASE_URL=${DATABASE_URL}
+    ports:
+      - "50054:50054"
+    networks:
+      - lms-net
+
+  # ===========================================================================
+  # 3. API Gateway Layer (REST / JWT RBAC / Swagger)
+  # ===========================================================================
+
+  gateway:
+    build:
+      context: .
+      dockerfile: infra/docker/gateway.Dockerfile
+    container_name: masterylms-gateway
+    restart: unless-stopped
+    depends_on:
+      - course-svc
+      - assessment-svc
+      - mastery-svc
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - COURSE_SERVICE_TARGET=course-svc:50051
+      - ASSESSMENT_SERVICE_TARGET=assessment-svc:50052
+      - MASTERY_SERVICE_TARGET=mastery-svc:50053
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - SUPABASE_JWT_SECRET=${SUPABASE_JWT_SECRET}
+      - DATABASE_URL=${DATABASE_URL}
+      - ODOO_WEBHOOK_SECRET=${ODOO_WEBHOOK_SECRET:-odoo-mastery-lms-secret-2026}
+    ports:
+      - "3000:3000"
+    networks:
+      - lms-net
+
+  # ===========================================================================
+  # 4. Frontend Application Layer (Next.js 16)
+  # ===========================================================================
+
+  frontend:
+    build:
+      context: .
+      dockerfile: infra/docker/frontend.Dockerfile
+      args:
+        - NEXT_PUBLIC_SUPABASE_URL=${SUPABASE_URL}
+        - NEXT_PUBLIC_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+        - NEXT_PUBLIC_GATEWAY_URL=http://localhost:3000
+    container_name: masterylms-frontend
+    restart: unless-stopped
+    depends_on:
+      - gateway
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - NEXT_PUBLIC_SUPABASE_URL=${SUPABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - NEXT_PUBLIC_GATEWAY_URL=http://localhost:3000
+    ports:
+      - "3001:3001"
+    networks:
+      - lms-net
+
+# =============================================================================
+# Networks & Volumes
+# =============================================================================
+
+networks:
+  lms-net:
+    driver: bridge
 
 volumes:
   redis_data:
