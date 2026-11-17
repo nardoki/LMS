@@ -18,7 +18,7 @@ export default async function PublicVerifyCertificatePage({
   const { data: certRow } = await supabase
     .from("certificates")
     .select(
-      `id, verification_code, mastered_concepts_json, issued_at, student_id, course_id`,
+      `id, verification_code, payload_hash, mastered_concepts_json, issued_at, student_id, course_id`,
     )
     .eq("verification_code", code)
     .maybeSingle();
@@ -107,6 +107,11 @@ export default async function PublicVerifyCertificatePage({
         instructorName,
         issuedAt: certRow?.issued_at ? String(certRow.issued_at) : new Date().toISOString(),
         masteredConcepts,
+        payloadHash:
+          certRow?.payload_hash ||
+          (isFallbackMatch
+            ? "8f18c2807f62c5b967cecf2ad8a2cfec7535ad4687bc5e59b2d97adbafe5c635"
+            : undefined),
       }}
     />
   );

@@ -19,6 +19,8 @@ export interface CertificateVerifyData {
   instructorName: string;
   issuedAt: string;
   masteredConcepts: string[];
+  payloadHash?: string;
+  qrCodeDataUrl?: string;
 }
 
 export interface CertificateVerifyProps {
@@ -150,20 +152,29 @@ export function CertificateVerify({ certificate }: CertificateVerifyProps) {
 
             {/* QR Code Container */}
             <div className="flex flex-col items-center justify-center space-y-1">
-              <div className="p-2.5 rounded-xl bg-white text-black shadow-md">
-                {/* Clean SVG Mock QR Code */}
-                <svg className="h-16 w-16" viewBox="0 0 100 100" fill="currentColor">
-                  <path d="M0,0 h30 v30 h-30 z M10,10 h10 v10 h-10 z" />
-                  <path d="M70,0 h30 v30 h-30 z M80,10 h10 v10 h-10 z" />
-                  <path d="M0,70 h30 v30 h-30 z M10,80 h10 v10 h-10 z" />
-                  <rect x="38" y="10" width="10" height="20" />
-                  <rect x="52" y="10" width="10" height="10" />
-                  <rect x="40" y="40" width="20" height="20" />
-                  <rect x="10" y="40" width="15" height="10" />
-                  <rect x="75" y="40" width="15" height="15" />
-                  <rect x="40" y="70" width="10" height="20" />
-                  <rect x="60" y="75" width="25" height="15" />
-                </svg>
+              <div className="p-2 rounded-xl bg-white text-black shadow-md flex items-center justify-center">
+                {certificate.qrCodeDataUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={certificate.qrCodeDataUrl}
+                    alt={`Verification QR Code for ${certificate.verificationCode}`}
+                    className="h-20 w-20 object-contain"
+                  />
+                ) : (
+                  /* Clean SVG QR Code fallback */
+                  <svg className="h-16 w-16" viewBox="0 0 100 100" fill="currentColor">
+                    <path d="M0,0 h30 v30 h-30 z M10,10 h10 v10 h-10 z" />
+                    <path d="M70,0 h30 v30 h-30 z M80,10 h10 v10 h-10 z" />
+                    <path d="M0,70 h30 v30 h-30 z M10,80 h10 v10 h-10 z" />
+                    <rect x="38" y="10" width="10" height="20" />
+                    <rect x="52" y="10" width="10" height="10" />
+                    <rect x="40" y="40" width="20" height="20" />
+                    <rect x="10" y="40" width="15" height="10" />
+                    <rect x="75" y="40" width="15" height="15" />
+                    <rect x="40" y="70" width="10" height="20" />
+                    <rect x="60" y="75" width="25" height="15" />
+                  </svg>
+                )}
               </div>
               <span className="text-[10px] font-mono text-slate-400">Scan to Verify</span>
             </div>
@@ -175,14 +186,22 @@ export function CertificateVerify({ certificate }: CertificateVerifyProps) {
             </div>
           </div>
 
-          {/* Verification Code Footer */}
-          <div className="pt-4 border-t border-slate-800/60 flex flex-wrap items-center justify-between text-[11px] font-mono text-slate-400">
-            <span className="inline-flex items-center gap-1.5 text-emerald-400">
-              <ShieldCheck className="h-4 w-4" /> Cryptographically Verified Record
-            </span>
-            <span>
-              Code: <strong className="text-white">{certificate.verificationCode}</strong>
-            </span>
+          {/* Verification Code & Cryptographic SHA-256 Footer */}
+          <div className="pt-4 border-t border-slate-800/60 space-y-2 text-[11px] font-mono text-slate-400">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="inline-flex items-center gap-1.5 text-emerald-400">
+                <ShieldCheck className="h-4 w-4" /> Cryptographically Verified Record
+              </span>
+              <span>
+                Code: <strong className="text-white">{certificate.verificationCode}</strong>
+              </span>
+            </div>
+            {certificate.payloadHash && (
+              <div className="text-left text-[10px] text-slate-500 break-all bg-slate-950/50 rounded-lg p-2 border border-slate-800 font-mono">
+                <span className="text-slate-400 uppercase tracking-wider font-semibold mr-1">SHA-256 Hash:</span>
+                <span className="text-indigo-300">{certificate.payloadHash}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>

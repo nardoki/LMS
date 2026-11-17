@@ -25,7 +25,7 @@ export default async function CertificatesPage() {
   // 2. Fetch certificates earned by user
   const { data: certRows } = await supabase
     .from("certificates")
-    .select("id, verification_code, course_id, mastered_concepts_json, issued_at")
+    .select("id, verification_code, payload_hash, course_id, mastered_concepts_json, issued_at")
     .eq("student_id", user.id)
     .order("issued_at", { ascending: false });
 
@@ -45,6 +45,7 @@ export default async function CertificatesPage() {
   const certificates: StudentCertificateItem[] = (certRows ?? []).map((c) => ({
     id: c.id,
     verificationCode: c.verification_code,
+    payloadHash: c.payload_hash ?? undefined,
     courseId: c.course_id,
     courseTitle: courseTitleMap.get(c.course_id) ?? "Intro to Web Development",
     issuedAt: String(c.issued_at),

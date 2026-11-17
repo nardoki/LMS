@@ -20,6 +20,8 @@ export interface StudentCertificateItem {
   courseId: string;
   issuedAt: string;
   masteredConcepts: string[];
+  payloadHash?: string;
+  qrCodeDataUrl?: string;
 }
 
 export interface StudentCertificatesProps {
@@ -226,6 +228,13 @@ export function StudentCertificates({
                         </span>
                       ))}
                     </div>
+                  </div>
+                )}
+
+                {cert.payloadHash && (
+                  <div className="text-[10px] text-slate-500 font-mono truncate bg-slate-950/40 px-2 py-1 rounded border border-slate-800">
+                    <span className="text-slate-400 font-semibold mr-1">SHA-256:</span>
+                    <span className="text-indigo-300">{cert.payloadHash}</span>
                   </div>
                 )}
 
