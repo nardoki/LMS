@@ -12,6 +12,7 @@ import { AnswerRecordedConsumer } from './events/answer-recorded.consumer';
 import { MasteryController } from './mastery.controller';
 import { MasteryService } from './mastery.service';
 import { MasteryRepository } from './repository/mastery.repository';
+import { RedisCacheService } from './cache/redis-cache.service';
 
 @Module({
   imports: [
@@ -33,6 +34,12 @@ import { MasteryRepository } from './repository/mastery.repository';
     ]),
   ],
   controllers: [MasteryController],
-  providers: [MasteryService, MasteryRepository, AnswerRecordedConsumer],
+  providers: [
+    MasteryService,
+    MasteryRepository,
+    AnswerRecordedConsumer,
+    RedisCacheService,
+  ],
+  exports: [RedisCacheService],
 })
 export class MasteryModule {}

@@ -5,6 +5,7 @@ import { AnswerRecordedConsumer } from '../src/events/answer-recorded.consumer';
 import { MasteryController } from '../src/mastery.controller';
 import { MasteryService } from '../src/mastery.service';
 import { MasteryRepository } from '../src/repository/mastery.repository';
+import { RedisCacheService } from '../src/cache/redis-cache.service';
 
 describe('MasteryController gRPC Health', () => {
   it('returns SERVING for HealthService.Check', async () => {
@@ -14,6 +15,15 @@ describe('MasteryController gRPC Health', () => {
         MasteryService,
         AnswerRecordedConsumer,
         { provide: MasteryRepository, useValue: {} },
+        {
+          provide: RedisCacheService,
+          useValue: {
+            get: async () => null,
+            set: async () => {},
+            del: async () => {},
+            invalidatePattern: async () => {},
+          },
+        },
         {
           provide: GRPC_CLIENTS.COURSE,
           useValue: {

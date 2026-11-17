@@ -13,6 +13,7 @@ import {
   MasteryStatus,
 } from './engine/mastery.engine';
 import { MasteryRepository, MasteryRow } from './repository/mastery.repository';
+import { RedisCacheService } from './cache/redis-cache.service';
 
 interface CourseGrpcPathNode {
   concept: { id: string; name: string; difficulty: number };
@@ -37,6 +38,7 @@ export class MasteryService implements OnModuleInit {
   constructor(
     private readonly masteryRepository: MasteryRepository,
     @Inject(GRPC_CLIENTS.COURSE) private readonly courseGrpc: ClientGrpc,
+    private readonly redisCache: RedisCacheService,
   ) {}
 
   onModuleInit(): void {
@@ -58,6 +60,7 @@ export class MasteryService implements OnModuleInit {
       studentId,
       conceptIds,
     );
+    await this.redisCache.invalidatePattern(`heatmap:${studentId}:*`);
     return { seeded_count: seededCount };
   }
 
@@ -90,6 +93,8 @@ export class MasteryService implements OnModuleInit {
       next_review_at: updated.nextReviewAt.toISOString(),
     });
 
+    await this.redisCache.invalidatePattern(`heatmap:${input.student_id}:*`);
+
     return this.toCellDto(saved, '', true);
   }
 
@@ -120,10 +125,23 @@ export class MasteryService implements OnModuleInit {
       next_review_at: computed.nextReviewAt.toISOString(),
     });
 
+    await this.redisCache.invalidatePattern(`heatmap:${input.student_id}:*`);
+
     return this.toCellDto(saved, '', true);
   }
 
   async getHeatmap(studentId: string, courseId: string) {
+    const cacheKey = `heatmap:${studentId}:${courseId}`;
+    const cached = await this.redisCache.get<{
+      student_id: string;
+      course_id: string;
+      cells: unknown[];
+    }>(cacheKey);
+
+    if (cached) {
+      return cached;
+    }
+
     const [coursePath, studentRows] = await Promise.all([
       firstValueFrom(
         this.courseClient
@@ -191,11 +209,15 @@ export class MasteryService implements OnModuleInit {
       };
     });
 
-    return {
+    const result = {
       student_id: studentId,
       course_id: courseId,
       cells,
     };
+
+    await this.redisCache.set(cacheKey, result, 60);
+
+    return result;
   }
 
   async getSmartQueue(studentId: string, courseId: string) {
