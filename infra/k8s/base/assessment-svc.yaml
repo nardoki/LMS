@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: assessment-svc
+  labels:
+    app: assessment-svc
+    tier: microservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: assessment-svc
+  template:
+    metadata:
+      labels:
+        app: assessment-svc
+        tier: microservice
+    spec:
+      containers:
+        - name: assessment-svc
+          image: ghcr.io/masterylms/assessment-svc:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 50052
+              name: grpc
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: ASSESSMENT_SERVICE_TARGET
+              value: "0.0.0.0:50052"
+            - name: COURSE_SERVICE_TARGET
+              value: "course-svc:50051"
+            - name: MASTERY_SERVICE_TARGET
+              value: "mastery-svc:50053"
+            - name: SUPABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: masterylms-secrets
+                  key: SUPABASE_URL
+            - name: SUPABASE_SERVICE_ROLE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: masterylms-secrets
+                  key: SUPABASE_SERVICE_ROLE_KEY
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: masterylms-secrets
+                  key: DATABASE_URL
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: assessment-svc
+  labels:
+    app: assessment-svc
+spec:
+  type: ClusterIP
+  ports:
+    - port: 50052
+      targetPort: grpc
+      name: grpc
+  selector:
+    app: assessment-svc

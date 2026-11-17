@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mastery-svc
+  labels:
+    app: mastery-svc
+    tier: microservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mastery-svc
+  template:
+    metadata:
+      labels:
+        app: mastery-svc
+        tier: microservice
+    spec:
+      containers:
+        - name: mastery-svc
+          image: ghcr.io/masterylms/mastery-svc:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 50053
+              name: grpc
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: MASTERY_SERVICE_TARGET
+              value: "0.0.0.0:50053"
+            - name: COURSE_SERVICE_TARGET
+              value: "course-svc:50051"
+            - name: REDIS_HOST
+              value: "redis"
+            - name: REDIS_PORT
+              value: "6379"
+            - name: SUPABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: masterylms-secrets
+                  key: SUPABASE_URL
+            - name: SUPABASE_SERVICE_ROLE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: masterylms-secrets
+                  key: SUPABASE_SERVICE_ROLE_KEY
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: masterylms-secrets
+                  key: DATABASE_URL
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mastery-svc
+  labels:
+    app: mastery-svc
+spec:
+  type: ClusterIP
+  ports:
+    - port: 50053
+      targetPort: grpc
+      name: grpc
+  selector:
+    app: mastery-svc

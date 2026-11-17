@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - redis.yaml
+  - course-svc.yaml
+  - assessment-svc.yaml
+  - mastery-svc.yaml
+  - gateway.yaml
+  - frontend.yaml

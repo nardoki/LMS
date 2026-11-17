@@ -1,0 +1,37 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: masterylms-prod
+
+namePrefix: prod-
+
+resources:
+  - ../../base
+
+replicas:
+  - name: gateway
+    count: 3
+  - name: course-svc
+    count: 2
+  - name: assessment-svc
+    count: 2
+  - name: mastery-svc
+    count: 2
+  - name: frontend
+    count: 3
+
+images:
+  - name: ghcr.io/masterylms/gateway
+    newTag: v1.0.0
+  - name: ghcr.io/masterylms/course-svc
+    newTag: v1.0.0
+  - name: ghcr.io/masterylms/assessment-svc
+    newTag: v1.0.0
+  - name: ghcr.io/masterylms/mastery-svc
+    newTag: v1.0.0
+  - name: ghcr.io/masterylms/frontend
+    newTag: v1.0.0
+
+commonLabels:
+  environment: production
+  managed-by: argocd
