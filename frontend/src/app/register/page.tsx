@@ -363,8 +363,8 @@ export default function RegisterPage() {
               </Button>
             </form>
 
-            {/* Footer Registration Link & Trust */}
-            <div className="pt-4 border-t border-slate-100 space-y-3">
+            {/* Footer Registration Link */}
+            <div className="pt-4 border-t border-slate-100">
               <div className="text-center text-xs text-slate-500">
                 Already have an account?{" "}
                 <Link
@@ -373,17 +373,6 @@ export default function RegisterPage() {
                 >
                   Sign in to your portal
                 </Link>
-              </div>
-
-              <div className="flex items-center justify-center gap-4 text-[11px] text-slate-400">
-                <span className="flex items-center gap-1">
-                  <ShieldCheck className="h-3.5 w-3.5 text-slate-400" />
-                  256-bit SSL
-                </span>
-                <span>•</span>
-                <span>Supabase Protected</span>
-                <span>•</span>
-                <span>Instant Access</span>
               </div>
             </div>
           </div>

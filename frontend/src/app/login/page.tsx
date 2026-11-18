@@ -367,9 +367,6 @@ export default function LoginPage() {
                   <ShieldCheck className="h-3.5 w-3.5" />
                   Secure Sign-In
                 </div>
-                <span className="text-xs text-slate-400 font-medium hidden sm:inline">
-                  Next.js 16 • Supabase Auth
-                </span>
               </div>
 
               <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
@@ -527,8 +524,8 @@ export default function LoginPage() {
               </Button>
             </form>
 
-            {/* Footer Registration & Trust */}
-            <div className="pt-4 border-t border-slate-100 space-y-3">
+            {/* Footer Registration */}
+            <div className="pt-4 border-t border-slate-100">
               <div className="text-center text-xs text-slate-500">
                 New student joining a course?{" "}
                 <Link
@@ -537,17 +534,6 @@ export default function LoginPage() {
                 >
                   Create a student account
                 </Link>
-              </div>
-
-              <div className="flex items-center justify-center gap-4 text-[11px] text-slate-400">
-                <span className="flex items-center gap-1">
-                  <ShieldCheck className="h-3.5 w-3.5 text-slate-400" />
-                  256-bit SSL
-                </span>
-                <span>•</span>
-                <span>Supabase Protected</span>
-                <span>•</span>
-                <span>RBAC Guarded</span>
               </div>
             </div>
           </div>
