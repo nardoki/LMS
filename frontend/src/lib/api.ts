@@ -1,7 +1,11 @@
 import { createClient } from "./supabase/client";
 
+const DEFAULT_GATEWAY_URL = "https://masterylms-api-production.up.railway.app";
+
 const GATEWAY_URL =
-  process.env.NEXT_PUBLIC_GATEWAY_URL ?? "http://localhost:3000";
+  process.env.NEXT_PUBLIC_GATEWAY_URL ||
+  process.env.GATEWAY_URL ||
+  DEFAULT_GATEWAY_URL;
 
 export async function gatewayFetch<T>(
   path: string,
