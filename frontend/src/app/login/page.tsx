@@ -21,9 +21,6 @@ import {
   Network,
   Activity,
   FileCheck2,
-  KeyRound,
-  ChevronDown,
-  ChevronUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,7 +47,6 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [portalMode, setPortalMode] = useState<"student" | "staff">("student");
-  const [showSeedHelper, setShowSeedHelper] = useState(false);
   const [activeShowcaseTab, setActiveShowcaseTab] = useState<"graph" | "diagnostics" | "certificate">("graph");
 
   const isValidEmail = email.length > 3 && email.includes("@") && email.includes(".");
@@ -498,7 +494,7 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              {/* Remember Me and Seed Credentials Trigger */}
+              {/* Remember Me */}
               <div className="flex items-center justify-between pt-1">
                 <label className="flex items-center gap-2 cursor-pointer select-none">
                   <input
@@ -509,72 +505,7 @@ export default function LoginPage() {
                   />
                   <span className="text-xs text-slate-600 font-medium">Remember my email</span>
                 </label>
-
-                <button
-                  type="button"
-                  onClick={() => setShowSeedHelper(!showSeedHelper)}
-                  className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-1"
-                >
-                  <KeyRound className="h-3.5 w-3.5" />
-                  {showSeedHelper ? "Hide Demo Logins" : "Demo Logins"}
-                  {showSeedHelper ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-                </button>
               </div>
-
-              {/* Collapsible Discreet Seed Helper Table */}
-              {showSeedHelper && (
-                <div className="rounded-xl border border-indigo-100 bg-indigo-50/60 p-3.5 space-y-2.5 transition-all text-xs">
-                  <div className="flex items-center justify-between text-indigo-950 font-semibold">
-                    <span>Quick Seeded Test Credentials</span>
-                    <span className="font-mono text-[11px] text-indigo-700">Password: Password123!</span>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
-                    <div
-                      onClick={() => {
-                        setEmail("alice@masterylms.dev");
-                        setPassword("Password123!");
-                      }}
-                      className="p-2 rounded-lg bg-white border border-indigo-100 cursor-pointer hover:border-indigo-300 transition-colors"
-                    >
-                      <div className="font-bold text-slate-800">Alice (Student)</div>
-                      <div className="text-slate-500 font-mono">alice@masterylms.dev</div>
-                    </div>
-                    <div
-                      onClick={() => {
-                        setEmail("bob@masterylms.dev");
-                        setPassword("Password123!");
-                      }}
-                      className="p-2 rounded-lg bg-white border border-indigo-100 cursor-pointer hover:border-indigo-300 transition-colors"
-                    >
-                      <div className="font-bold text-slate-800">Bob (Student)</div>
-                      <div className="text-slate-500 font-mono">bob@masterylms.dev</div>
-                    </div>
-                    <div
-                      onClick={() => {
-                        setEmail("instructor@masterylms.dev");
-                        setPassword("Password123!");
-                      }}
-                      className="p-2 rounded-lg bg-white border border-indigo-100 cursor-pointer hover:border-indigo-300 transition-colors"
-                    >
-                      <div className="font-bold text-slate-800">Prof. Ada (Instructor)</div>
-                      <div className="text-slate-500 font-mono">instructor@masterylms.dev</div>
-                    </div>
-                    <div
-                      onClick={() => {
-                        setEmail("admin@masterylms.dev");
-                        setPassword("Password123!");
-                      }}
-                      className="p-2 rounded-lg bg-white border border-indigo-100 cursor-pointer hover:border-indigo-300 transition-colors"
-                    >
-                      <div className="font-bold text-slate-800">System Admin</div>
-                      <div className="text-slate-500 font-mono">admin@masterylms.dev</div>
-                    </div>
-                  </div>
-                  <div className="text-[10px] text-indigo-600 text-center">
-                    Click any box to auto-fill email & password
-                  </div>
-                </div>
-              )}
 
               {/* Submit CTA */}
               <Button
